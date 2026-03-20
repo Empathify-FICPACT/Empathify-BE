@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"log"
 
 	"github.com/gofiber/fiber/v3"
 
@@ -96,6 +97,7 @@ func (h *AuthHandler) GoogleLogin(c fiber.Ctx) error {
 
 	authURL := h.googleOAuth.GetAuthURL(state)
 	return c.Redirect().To(authURL)
+	// return c.Redirect().Status(fiber.StatusTemporaryRedirect).To(authURL)
 }
 
 // step 2 — Google redirect balik ke sini dengan code
@@ -123,18 +125,23 @@ func (h *AuthHandler) GoogleCallback(c fiber.Ctx) error {
 	// tukar code dengan token
 	token, err := h.googleOAuth.ExchangeCode(c.Context(), code)
 	if err != nil {
+		log.Println("ERROR ExchangeCode:", err)
 		return response.Unauthorized(c, "gagal verifikasi akun Google")
 	}
+	log.Println("Token OK:", token.AccessToken[:10])
 
 	// ambil info user dari Google
 	googleUser, err := h.googleOAuth.GetUserInfo(c.Context(), token)
 	if err != nil {
+		log.Println("ERROR GetUserInfo:", err)
 		return response.InternalServerError(c, "gagal mengambil data akun Google")
 	}
+	log.Println("GoogleUser:", googleUser)
 
 	// login atau register otomatis
 	result, err := h.authService.LoginGoogle(c.Context(), googleUser)
 	if err != nil {
+		log.Println("ERROR LoginGoogle:", err)
 		return response.InternalServerError(c, "terjadi kesalahan, coba lagi")
 	}
 

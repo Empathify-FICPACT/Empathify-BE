@@ -60,8 +60,8 @@ func (s *authService) RegisterEmail(ctx context.Context, req *request.RegisterRe
 	user := &domain.User{
 		ID:            userID,
 		Name:          req.Name,
-		Gender:        req.Gender,
-		AvatarID:      req.AvatarID,
+		Gender:        &req.Gender,
+		AvatarID:      &req.AvatarID,
 		CurrentStreak: 0,
 		LongestStreak: 0,
 		CreatedAt:     now,
@@ -161,8 +161,8 @@ func (s *authService) LoginGoogle(ctx context.Context, googleUser *domain.Google
 		user := &domain.User{
 			ID:            userID,
 			Name:          &googleUser.Name,
-			Gender:        googleUser.Gender,
-			AvatarID:      1, // default avatar
+			Gender:        nil,
+			AvatarID:      nil, // default avatar
 			CurrentStreak: 0,
 			LongestStreak: 0,
 			CreatedAt:     now,

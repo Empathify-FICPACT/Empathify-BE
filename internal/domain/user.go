@@ -5,8 +5,8 @@ import "time"
 type User struct {
 	ID             string
 	Name           *string
-	Gender         string
-	AvatarID       int16
+	Gender         *string
+	AvatarID       *int16
 	CurrentStreak  int
 	LongestStreak  int
 	LastActiveDate *time.Time

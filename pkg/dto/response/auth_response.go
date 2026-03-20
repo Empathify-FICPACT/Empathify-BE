@@ -8,6 +8,6 @@ type AuthResponse struct {
 type UserData struct {
 	ID       string  `json:"id"`
 	Name     *string `json:"name"`
-	Gender   string  `json:"gender"`
-	AvatarID int16   `json:"avatar_id"`
+	Gender   *string  `json:"gender"`
+	AvatarID *int16   `json:"avatar_id"`
 }
