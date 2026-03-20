@@ -24,3 +24,10 @@ type UserAuth struct {
 	IsVerified   bool
 	CreatedAt    time.Time
 }
+
+type GoogleUser struct {
+	ID     string
+	Name   string
+	Email  string
+	Gender string
+}
