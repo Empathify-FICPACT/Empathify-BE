@@ -22,6 +22,11 @@ type Config struct {
 	// JWT
 	JWTSecret     string
 	JWTExpireHours string
+
+	// Google OAuth
+    GoogleClientID     string
+    GoogleClientSecret string
+    GoogleRedirectURL  string
 }
 
 var App *Config
@@ -43,6 +48,10 @@ func Load() {
 
 		JWTSecret:      getEnv("JWT_SECRET", ""),
 		JWTExpireHours: getEnv("JWT_EXPIRE_HOURS", "24"),
+		
+        GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
+        GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+        GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", ""),
 	}
 }
 
