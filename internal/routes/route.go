@@ -16,6 +16,10 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	googleOAuth := provider.NewGoogleOAuthProvider()
 	authHandler := handler.NewAuthHandler(authService, googleOAuth)
 
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
 	api := app.Group("/api/v1")
 
 	api.Get("/", func (c fiber.Ctx) error {
@@ -23,4 +27,5 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	})
 
 	RegisterAuthRoutes(api, authHandler)
+	RegisterUserRoutes(api, userHandler)
 }
