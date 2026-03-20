@@ -6,7 +6,7 @@
 // @contact.name   Empathify Team
 // @contact.email  empathify@gmail.com
 
-// @host      empathify-test.fly.dev
+// @host      empathify-be-staging.fly.dev
 // @BasePath  /api/v1
 
 // @securityDefinitions.apikey BearerAuth
