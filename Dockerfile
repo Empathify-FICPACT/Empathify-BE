@@ -19,7 +19,7 @@ COPY . .
 RUN swag init -g cmd/main.go --output docs
 
 # build binary
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd
 
 # Stage 2 — run
 FROM alpine:3.19
