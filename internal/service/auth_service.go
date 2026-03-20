@@ -60,8 +60,8 @@ func (s *authService) RegisterEmail(ctx context.Context, req *request.RegisterRe
 	user := &domain.User{
 		ID:            userID,
 		Name:          req.Name,
-		Gender:        &req.Gender,
-		AvatarID:      &req.AvatarID,
+		Gender:        nil,
+		AvatarID:      nil,
 		CurrentStreak: 0,
 		LongestStreak: 0,
 		CreatedAt:     now,

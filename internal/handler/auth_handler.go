@@ -33,12 +33,8 @@ func (h *AuthHandler) RegisterEmail(c fiber.Ctx) error {
 		return response.BadRequest(c, "invalid request body")
 	}
 
-	if req.Email == "" || req.Password == "" || req.Gender == "" || req.AvatarID == 0 {
-		return response.BadRequest(c, "email, password, gender, dan avatar_id wajib diisi")
-	}
-
-	if req.AvatarID < 1 || req.AvatarID > 4 {
-		return response.BadRequest(c, "avatar_id harus antara 1 sampai 4")
+	if req.Email == "" || req.Password == "" {
+		return response.BadRequest(c, "email dan password wajib diisi")
 	}
 
 	result, err := h.authService.RegisterEmail(c.Context(), req)
