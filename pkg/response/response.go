@@ -3,8 +3,8 @@ package response
 import "github.com/gofiber/fiber/v3"
 
 type Meta struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+	Success bool   `json:"success" example:"true"`
+	Message string `json:"message" example:"operasi berhasil"`
 }
 
 type Response struct {

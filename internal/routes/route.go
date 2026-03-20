@@ -3,7 +3,8 @@ package routes
 import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
-
+	swaggo "github.com/gofiber/contrib/v3/swaggo"
+	
 	"github.com/Empathify-FICPACT/Empathify-BE/internal/handler"
 	"github.com/Empathify-FICPACT/Empathify-BE/internal/provider"
 	"github.com/Empathify-FICPACT/Empathify-BE/internal/repository"
@@ -19,13 +20,15 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
-
+	
 	api := app.Group("/api/v1")
-
+	
 	api.Get("/", func (c fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
-
+	
+	app.Get("/swagger/*", swaggo.HandlerDefault)
+	
 	RegisterAuthRoutes(api, authHandler)
 	RegisterUserRoutes(api, userHandler)
 }

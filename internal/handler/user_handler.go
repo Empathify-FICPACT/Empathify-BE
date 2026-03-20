@@ -19,6 +19,19 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 
+// @Summary      Onboarding user
+// @Description  Isi gender dan avatar setelah register email atau login Google pertama kali
+// @Tags         User
+// @Accept       json
+// @Produce      json
+// @Param        body  body      request.OnboardingRequest  true  "Onboarding payload"
+// @Success      200   {object}  response.Response{data=response.UserResponse}
+// @Failure      400   {object}  response.Response
+// @Failure      401   {object}  response.Response
+// @Failure      404   {object}  response.Response
+// @Failure      500   {object}  response.Response
+// @Security     BearerAuth
+// @Router       /user/onboarding [patch]
 func (h *UserHandler) Onboarding(c fiber.Ctx) error {
 	userID := middleware.GetUserID(c)
 

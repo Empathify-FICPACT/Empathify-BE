@@ -26,6 +26,17 @@ func NewAuthHandler(authService service.AuthService, googleOAuth *provider.Googl
 	}
 }
 
+// @Summary      Register dengan email
+// @Description  Daftarkan akun baru menggunakan email dan password. Gender dan avatar diisi saat onboarding.
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      request.RegisterRequest  true  "Register payload"
+// @Success      201   {object}  response.Response{data=response.AuthResponse}
+// @Failure      400   {object}  response.Response
+// @Failure      409   {object}  response.Response
+// @Failure      500   {object}  response.Response
+// @Router       /auth/register [post]
 func (h *AuthHandler) RegisterEmail(c fiber.Ctx) error {
 	req := new(request.RegisterRequest)
 
@@ -50,6 +61,17 @@ func (h *AuthHandler) RegisterEmail(c fiber.Ctx) error {
 	return response.Created(c, "registrasi berhasil", result)
 }
 
+// @Summary      Login dengan email
+// @Description  Login menggunakan email dan password yang sudah terdaftar
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      request.LoginRequest  true  "Login payload"
+// @Success      200   {object}  response.Response{data=response.AuthResponse}
+// @Failure      400   {object}  response.Response
+// @Failure      401   {object}  response.Response
+// @Failure      500   {object}  response.Response
+// @Router       /auth/login [post]
 func (h *AuthHandler) LoginEmail(c fiber.Ctx) error {
 	req := new(request.LoginRequest)
 
@@ -74,6 +96,12 @@ func (h *AuthHandler) LoginEmail(c fiber.Ctx) error {
 	return response.Success(c, "login berhasil", result)
 }
 
+// @Summary      Login dengan Google
+// @Description  Redirect user ke halaman login Google OAuth
+// @Tags         Auth
+// @Success      302
+// @Failure      500  {object}  response.Response
+// @Router       /auth/google [get]
 // step 1 — redirect user ke halaman login Google
 func (h *AuthHandler) GoogleLogin(c fiber.Ctx) error {
 	// generate random state untuk CSRF protection
@@ -96,6 +124,17 @@ func (h *AuthHandler) GoogleLogin(c fiber.Ctx) error {
 	// return c.Redirect().Status(fiber.StatusTemporaryRedirect).To(authURL)
 }
 
+// @Summary      Google OAuth callback
+// @Description  Callback dari Google setelah user berhasil login. Otomatis register jika akun belum ada.
+// @Tags         Auth
+// @Produce      json
+// @Param        code   query     string  true  "Authorization code dari Google"
+// @Param        state  query     string  true  "State untuk CSRF protection"
+// @Success      200    {object}  response.Response{data=response.AuthResponse}
+// @Failure      400    {object}  response.Response
+// @Failure      401    {object}  response.Response
+// @Failure      500    {object}  response.Response
+// @Router       /auth/google/callback [get]
 // step 2 — Google redirect balik ke sini dengan code
 func (h *AuthHandler) GoogleCallback(c fiber.Ctx) error {
 	// validasi state (CSRF check)
