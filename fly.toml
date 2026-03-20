@@ -1,40 +1,23 @@
-app = "empathify-be-staging"
-primary_region = "sin"
+# fly.toml app configuration file generated for empathify-be-staging on 2026-03-20T11:03:02Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'empathify-be-staging'
+primary_region = 'sin'
 
 [build]
-  dockerfile = "Dockerfile"
-
-[env]
-  APP_PORT = "8008"
-  DB_PORT = "5432"
-  DB_SSL_MODE = "disable"
-  JWT_EXPIRE_HOURS = "24"
 
 [http_service]
-  internal_port = 8008
+  internal_port = 8080
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
-
-  [http_service.concurrency]
-    type = "requests"
-    hard_limit = 100
-    soft_limit = 80
+  processes = ['app']
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "256mb"
-
-```
-
----
-
-**`.dockerignore`**
-```
-.env
-.git
-.gitignore
-*.md
-tmp/
-credentials/
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 1024
