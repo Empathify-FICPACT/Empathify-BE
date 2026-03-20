@@ -1,0 +1,40 @@
+app = "empathify-be-staging"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_PORT = "8008"
+  DB_PORT = "5432"
+  DB_SSL_MODE = "disable"
+  JWT_EXPIRE_HOURS = "24"
+
+[http_service]
+  internal_port = 8008
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 100
+    soft_limit = 80
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+```
+
+---
+
+**`.dockerignore`**
+```
+.env
+.git
+.gitignore
+*.md
+tmp/
+credentials/

@@ -19,6 +19,7 @@ func NewApp(db *pgxpool.Pool) *fiber.App {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:3000",
+			"https://empathify-be-staging.fly.dev",
 		},
 		AllowMethods: []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
