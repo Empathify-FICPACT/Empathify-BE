@@ -16,6 +16,7 @@ type SessionResponse struct {
 	Status    string    `json:"status"`
 	XPEarned  int       `json:"xp_earned"`
 	StartedAt time.Time `json:"started_at"`
+	OpeningMessage MessageResponse `json:"opening_message"`
 }
 
 type MessageResponse struct {

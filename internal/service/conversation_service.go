@@ -16,11 +16,11 @@ import (
 )
 
 var (
-	ErrTopicNotFound      = errors.New("topic not found")
-	ErrSessionNotFound    = errors.New("session not found")
-	ErrSessionNotOwned    = errors.New("session does not belong to user")
-	ErrSessionCompleted   = errors.New("session already completed")
-	ErrSTTFailed = errors.New("failed to transcribe audio")
+	ErrTopicNotFound    = errors.New("topic not found")
+	ErrSessionNotFound  = errors.New("session not found")
+	ErrSessionNotOwned  = errors.New("session does not belong to user")
+	ErrSessionCompleted = errors.New("session already completed")
+	ErrSTTFailed        = errors.New("failed to transcribe audio")
 )
 
 const conversationXP = 15
@@ -125,6 +125,12 @@ func (s *conversationService) StartSession(ctx context.Context, userID string, r
 		Status:     session.Status,
 		XPEarned:   session.XPEarned,
 		StartedAt:  session.StartedAt,
+		OpeningMessage: response.MessageResponse{
+			ID:        aiMsg.ID,
+			Role:      aiMsg.Role,
+			Content:   aiMsg.Content,
+			CreatedAt: aiMsg.CreatedAt,
+		},
 	}, nil
 }
 
