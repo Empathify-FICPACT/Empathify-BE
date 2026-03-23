@@ -25,7 +25,7 @@ func NewUserRepository(db *pgxpool.Pool) UserRepository {
 
 func (r *userRepository) FindByID(ctx context.Context, id string) (*domain.User, error) {
 	query := `
-		SELECT id, name, gender, avatar_id, current_streak, longest_streak, last_active_date, created_at, updated_at
+		SELECT id, name, gender, avatar_id, total_xp, current_streak, longest_streak, last_active_date, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`

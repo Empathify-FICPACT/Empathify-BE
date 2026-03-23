@@ -488,6 +488,216 @@
                 }
             }
         },
+        "/expression/sessions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Expression"
+                ],
+                "summary": "Mulai sesi mengenal ekspresi",
+                "parameters": [
+                    {
+                        "description": "Jumlah ekspresi (3-5, default 3)",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/request.StartExpressionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.ExpressionSessionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/expression/sessions/{id}/attempts": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Expression"
+                ],
+                "summary": "Submit foto ekspresi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Reference ID ekspresi yang ditiru",
+                        "name": "reference_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Foto ekspresi user (jpg/png)",
+                        "name": "photo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.ExpressionAttemptResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/expression/sessions/{id}/complete": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Expression"
+                ],
+                "summary": "Selesaikan sesi ekspresi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.CompleteExpressionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/onboarding": {
             "patch": {
                 "security": [
@@ -635,6 +845,14 @@
                 }
             }
         },
+        "request.StartExpressionRequest": {
+            "type": "object",
+            "properties": {
+                "total_expressions": {
+                    "type": "integer"
+                }
+            }
+        },
         "response.AuthResponse": {
             "type": "object",
             "properties": {
@@ -644,6 +862,26 @@
                 },
                 "user": {
                     "$ref": "#/definitions/response.UserData"
+                }
+            }
+        },
+        "response.CompleteExpressionResponse": {
+            "type": "object",
+            "properties": {
+                "correct_count": {
+                    "type": "integer"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_xp": {
+                    "type": "integer"
+                },
+                "xp_earned": {
+                    "type": "integer"
                 }
             }
         },
@@ -657,6 +895,72 @@
                     "type": "integer"
                 },
                 "xp_earned": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.ExpressionAttemptResponse": {
+            "type": "object",
+            "properties": {
+                "ai_feedback": {
+                    "type": "string"
+                },
+                "attempt_id": {
+                    "type": "string"
+                },
+                "attempt_order": {
+                    "type": "integer"
+                },
+                "emotion": {
+                    "type": "string"
+                },
+                "is_correct": {
+                    "type": "boolean"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "similarity_score": {
+                    "type": "number"
+                }
+            }
+        },
+        "response.ExpressionReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "emotion": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.ExpressionSessionResponse": {
+            "type": "object",
+            "properties": {
+                "expressions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ExpressionReferenceResponse"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_expressions": {
                     "type": "integer"
                 }
             }

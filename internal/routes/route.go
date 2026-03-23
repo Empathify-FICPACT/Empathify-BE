@@ -27,6 +27,10 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	convService := service.NewConversationService(convRepo, userRepo, gemini, stt)
 	convHandler := handler.NewConversationHandler(convService)
 	
+	exprRepo := repository.NewExpressionRepository(db)
+	exprService := service.NewExpressionService(exprRepo, userRepo, gemini)
+	exprHandler := handler.NewExpressionHandler(exprService)
+
 	api := app.Group("/api/v1")
 	
 	api.Get("/", func (c fiber.Ctx) error {
@@ -38,4 +42,5 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	RegisterAuthRoutes(api, authHandler)
 	RegisterUserRoutes(api, userHandler)
 	RegisterConversationRoutes(api, convHandler)
+	RegisterExpressionRoutes(api, exprHandler)
 }
