@@ -46,7 +46,7 @@ func (g *GeminiProvider) Chat(ctx context.Context, systemPrompt string, history 
 		Parts: []*genai.Part{{Text: userMessage}},
 	})
 
-	resp, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, &genai.GenerateContentConfig{
+	resp, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", contents, &genai.GenerateContentConfig{
 		SystemInstruction: &genai.Content{
 			Parts: []*genai.Part{{Text: systemPrompt}},
 		},

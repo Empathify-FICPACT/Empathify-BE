@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -77,9 +78,11 @@ func (s *conversationService) GetTopics(ctx context.Context) ([]response.TopicRe
 func (s *conversationService) StartSession(ctx context.Context, userID string, req *request.StartConversationRequest) (*response.SessionResponse, error) {
 	topic, err := s.convRepo.GetTopicByID(ctx, req.TopicID)
 	if err != nil {
+		log.Println("ERROR GetTopicByID:", err)
 		return nil, err
 	}
 	if topic == nil {
+		log.Println("ERROR topic nil")
 		return nil, ErrTopicNotFound
 	}
 
@@ -93,12 +96,13 @@ func (s *conversationService) StartSession(ctx context.Context, userID string, r
 	}
 
 	if err := s.convRepo.CreateSession(ctx, session); err != nil {
+		log.Println("ERROR CreateSession:", err)
 		return nil, err
 	}
 
-	// kirim pesan pembuka dari AI
 	openingMsg, err := s.gemini.Chat(ctx, topic.SystemPrompt, nil, "Mulai percakapan")
 	if err != nil {
+		log.Println("ERROR Gemini Chat:", err)
 		return nil, err
 	}
 
@@ -110,6 +114,7 @@ func (s *conversationService) StartSession(ctx context.Context, userID string, r
 		CreatedAt: time.Now(),
 	}
 	if err := s.convRepo.CreateMessage(ctx, aiMsg); err != nil {
+		log.Println("ERROR CreateMessage:", err)
 		return nil, err
 	}
 
