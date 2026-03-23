@@ -50,6 +50,11 @@ definitions:
       topic_id:
         type: string
     type: object
+  request.StartExpressionRequest:
+    properties:
+      total_expressions:
+        type: integer
+    type: object
   response.AuthResponse:
     properties:
       access_token:
@@ -58,6 +63,19 @@ definitions:
       user:
         $ref: '#/definitions/response.UserData'
     type: object
+  response.CompleteExpressionResponse:
+    properties:
+      correct_count:
+        type: integer
+      session_id:
+        type: string
+      total:
+        type: integer
+      total_xp:
+        type: integer
+      xp_earned:
+        type: integer
+    type: object
   response.CompleteSessionResponse:
     properties:
       session_id:
@@ -65,6 +83,49 @@ definitions:
       total_xp:
         type: integer
       xp_earned:
+        type: integer
+    type: object
+  response.ExpressionAttemptResponse:
+    properties:
+      ai_feedback:
+        type: string
+      attempt_id:
+        type: string
+      attempt_order:
+        type: integer
+      emotion:
+        type: string
+      is_correct:
+        type: boolean
+      reference_id:
+        type: string
+      similarity_score:
+        type: number
+    type: object
+  response.ExpressionReferenceResponse:
+    properties:
+      emotion:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      order:
+        type: integer
+    type: object
+  response.ExpressionSessionResponse:
+    properties:
+      expressions:
+        items:
+          $ref: '#/definitions/response.ExpressionReferenceResponse'
+        type: array
+      id:
+        type: string
+      started_at:
+        type: string
+      status:
+        type: string
+      total_expressions:
         type: integer
     type: object
   response.MessageResponse:
@@ -462,6 +523,131 @@ paths:
       summary: Ambil semua topik percakapan
       tags:
       - Conversation
+  /expression/sessions:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Jumlah ekspresi (3-5, default 3)
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/request.StartExpressionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.ExpressionSessionResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Mulai sesi mengenal ekspresi
+      tags:
+      - Expression
+  /expression/sessions/{id}/attempts:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Reference ID ekspresi yang ditiru
+        in: formData
+        name: reference_id
+        required: true
+        type: string
+      - description: Foto ekspresi user (jpg/png)
+        in: formData
+        name: photo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.ExpressionAttemptResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Submit foto ekspresi
+      tags:
+      - Expression
+  /expression/sessions/{id}/complete:
+    patch:
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.CompleteExpressionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Selesaikan sesi ekspresi
+      tags:
+      - Expression
   /user/onboarding:
     patch:
       consumes:
