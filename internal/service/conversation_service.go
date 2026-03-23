@@ -19,6 +19,7 @@ var (
 	ErrSessionNotFound    = errors.New("session not found")
 	ErrSessionNotOwned    = errors.New("session does not belong to user")
 	ErrSessionCompleted   = errors.New("session already completed")
+	ErrSTTFailed = errors.New("failed to transcribe audio")
 )
 
 const conversationXP = 15
@@ -26,7 +27,7 @@ const conversationXP = 15
 type ConversationService interface {
 	GetTopics(ctx context.Context) ([]response.TopicResponse, error)
 	StartSession(ctx context.Context, userID string, req *request.StartConversationRequest) (*response.SessionResponse, error)
-	SendMessage(ctx context.Context, userID, sessionID string, req *request.SendMessageRequest) (*response.SendMessageResponse, error)
+	SendMessage(ctx context.Context, userID, sessionID string, audioBytes []byte) (*response.SendMessageResponse, error)
 	CompleteSession(ctx context.Context, userID, sessionID string) (*response.CompleteSessionResponse, error)
 }
 
@@ -34,17 +35,20 @@ type conversationService struct {
 	convRepo repository.ConversationRepository
 	userRepo repository.UserRepository
 	gemini   *provider.GeminiProvider
+	stt      *provider.STTProvider
 }
 
 func NewConversationService(
 	convRepo repository.ConversationRepository,
 	userRepo repository.UserRepository,
 	gemini *provider.GeminiProvider,
+	stt *provider.STTProvider,
 ) ConversationService {
 	return &conversationService{
 		convRepo: convRepo,
 		userRepo: userRepo,
 		gemini:   gemini,
+		stt:      stt,
 	}
 }
 
@@ -119,7 +123,7 @@ func (s *conversationService) StartSession(ctx context.Context, userID string, r
 	}, nil
 }
 
-func (s *conversationService) SendMessage(ctx context.Context, userID, sessionID string, req *request.SendMessageRequest) (*response.SendMessageResponse, error) {
+func (s *conversationService) SendMessage(ctx context.Context, userID, sessionID string, audioBytes []byte) (*response.SendMessageResponse, error) {
 	session, err := s.convRepo.GetSessionByID(ctx, sessionID)
 	if err != nil {
 		return nil, err
@@ -146,14 +150,20 @@ func (s *conversationService) SendMessage(ctx context.Context, userID, sessionID
 		return nil, err
 	}
 
+	// STT — audio → teks
+	userText, err := s.stt.Transcribe(ctx, audioBytes)
+	if err != nil {
+		return nil, ErrSTTFailed
+	}
+
 	now := time.Now()
 
-	// simpan pesan user
+	// simpan pesan user (teks hasil STT)
 	userMsg := &domain.ConversationMessage{
 		ID:        uuid.NewString(),
 		SessionID: sessionID,
 		Role:      "user",
-		Content:   req.Content,
+		Content:   userText,
 		CreatedAt: now,
 	}
 	if err := s.convRepo.CreateMessage(ctx, userMsg); err != nil {
@@ -161,7 +171,7 @@ func (s *conversationService) SendMessage(ctx context.Context, userID, sessionID
 	}
 
 	// kirim ke Gemini dengan history
-	aiResponse, err := s.gemini.Chat(ctx, topic.SystemPrompt, history, req.Content)
+	aiResponse, err := s.gemini.Chat(ctx, topic.SystemPrompt, history, userText)
 	if err != nil {
 		return nil, err
 	}
