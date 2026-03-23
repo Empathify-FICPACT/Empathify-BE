@@ -20,6 +20,11 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
+
+	gemini := provider.NewGeminiProvider()
+	convRepo := repository.NewConversationRepository(db)
+	convService := service.NewConversationService(convRepo, userRepo, gemini)
+	convHandler := handler.NewConversationHandler(convService)
 	
 	api := app.Group("/api/v1")
 	
@@ -31,4 +36,5 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	
 	RegisterAuthRoutes(api, authHandler)
 	RegisterUserRoutes(api, userHandler)
+	RegisterConversationRoutes(api, convHandler)
 }
