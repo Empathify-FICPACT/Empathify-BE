@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"io"
 
 	"github.com/gofiber/fiber/v3"
 
@@ -103,8 +104,8 @@ func (h *ConversationHandler) SendMessage(c fiber.Ctx) error {
 	}
 	defer file.Close()
 
-	audioBytes := make([]byte, fileHeader.Size)
-	if _, err := file.Read(audioBytes); err != nil {
+	audioBytes, err := io.ReadAll(file)
+	if err != nil {
 		return response.InternalServerError(c, "gagal membaca file audio")
 	}
 

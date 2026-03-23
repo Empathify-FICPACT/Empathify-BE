@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"log"
 
 	speech "cloud.google.com/go/speech/apiv1"
 	"cloud.google.com/go/speech/apiv1/speechpb"
@@ -13,25 +14,27 @@ import (
 
 var ErrSTTFailed = errors.New("failed to transcribe audio")
 
-type STTProvider struct{}
+type STTProvider struct {
+	client *speech.Client
+}
 
 func NewSTTProvider() *STTProvider {
-	return &STTProvider{}
+	ctx := context.Background()
+
+	client, err := speech.NewClient(ctx, option.WithCredentialsFile(config.App.GoogleSTTCredentials))
+	if err != nil {
+		panic(err)
+	}
+
+	return &STTProvider{client: client}
 }
 
 func (s *STTProvider) Transcribe(ctx context.Context, audioBytes []byte) (string, error) {
-	client, err := speech.NewClient(ctx, option.WithCredentialsFile(config.App.GoogleSTTCredentials))
-	if err != nil {
-		return "", ErrSTTFailed
-	}
-	defer client.Close()
-
 	req := &speechpb.RecognizeRequest{
 		Config: &speechpb.RecognitionConfig{
 			Encoding:        speechpb.RecognitionConfig_MP3,
 			SampleRateHertz: 44100,
 			LanguageCode:    "id-ID",
-			Model:           "latest_long",
 		},
 		Audio: &speechpb.RecognitionAudio{
 			AudioSource: &speechpb.RecognitionAudio_Content{
@@ -40,13 +43,15 @@ func (s *STTProvider) Transcribe(ctx context.Context, audioBytes []byte) (string
 		},
 	}
 
-	resp, err := client.Recognize(ctx, req)
+	resp, err := s.client.Recognize(ctx, req)
 	if err != nil {
-		return "", ErrSTTFailed
+		log.Println("GOOGLE STT ERROR:", err)
+		return "", err
 	}
 
-	if len(resp.Results) == 0 || len(resp.Results[0].Alternatives) == 0 {
-		return "", ErrSTTFailed
+	if len(resp.Results) == 0 {
+		log.Println("STT EMPTY RESPONSE")
+		return "", errors.New("empty transcription")
 	}
 
 	return resp.Results[0].Alternatives[0].Transcript, nil

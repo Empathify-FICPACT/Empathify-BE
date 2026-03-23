@@ -164,6 +164,7 @@ func (s *conversationService) SendMessage(ctx context.Context, userID, sessionID
 	// STT — audio → teks
 	userText, err := s.stt.Transcribe(ctx, audioBytes)
 	if err != nil {
+		log.Println("ERROR STT:", err)
 		return nil, ErrSTTFailed
 	}
 

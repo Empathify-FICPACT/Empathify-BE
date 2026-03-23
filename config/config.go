@@ -61,7 +61,7 @@ func Load() {
 		
         GeminiAPIKey: getEnv("GEMINI_API_KEY", ""),
 
-        GoogleSTTCredentials: getEnv("GOOGLE_STT_CREDENTIALS", ""),
+        GoogleSTTCredentials: getEnv("GOOGLE_APPLICATION_CREDENTIALS", ""),
 	}
 }
 
