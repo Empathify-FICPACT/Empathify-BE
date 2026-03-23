@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -42,6 +43,7 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*domain.User,
 		&user.UpdatedAt,
 	)
 	if err != nil {
+		log.Println("ERROR FindByID:", err)
 		return nil, err
 	}
 	return user, nil
