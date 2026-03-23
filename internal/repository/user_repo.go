@@ -11,6 +11,7 @@ import (
 type UserRepository interface {
 	FindByID(ctx context.Context, id string) (*domain.User, error)
 	UpdateOnboarding(ctx context.Context, id string, gender string, avatarID int16) error
+	AddXP(ctx context.Context, userID string, xp int) error
 }
 
 type userRepository struct {
@@ -33,6 +34,7 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*domain.User,
 		&user.Name,
 		&user.Gender,
 		&user.AvatarID,
+		&user.TotalXP,
 		&user.CurrentStreak,
 		&user.LongestStreak,
 		&user.LastActiveDate,
@@ -52,5 +54,15 @@ func (r *userRepository) UpdateOnboarding(ctx context.Context, id string, gender
 		WHERE id = $3
 	`
 	_, err := r.db.Exec(ctx, query, gender, avatarID, id)
+	return err
+}
+
+func (r *userRepository) AddXP(ctx context.Context, userID string, xp int) error {
+	query := `
+		UPDATE users
+		SET total_xp = total_xp + $1, updated_at = now()
+		WHERE id = $2
+	`
+	_, err := r.db.Exec(ctx, query, xp, userID)
 	return err
 }
