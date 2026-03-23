@@ -8,3 +8,5 @@
 
 .env
 config/*.json
+
+/credentials

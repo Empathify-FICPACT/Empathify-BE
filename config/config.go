@@ -27,6 +27,12 @@ type Config struct {
     GoogleClientID     string
     GoogleClientSecret string
     GoogleRedirectURL  string
+
+	// Gemini
+    GeminiAPIKey string
+
+    // Google Cloud
+    GoogleSTTCredentials string
 }
 
 var App *Config
@@ -52,6 +58,10 @@ func Load() {
         GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
         GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
         GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", ""),
+		
+        GeminiAPIKey: getEnv("GEMINI_API_KEY", ""),
+
+        GoogleSTTCredentials: getEnv("GOOGLE_APPLICATION_CREDENTIALS", ""),
 	}
 }
 
