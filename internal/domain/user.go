@@ -7,6 +7,7 @@ type User struct {
 	Name           *string
 	Gender         *string
 	AvatarID       *int16
+	TotalXP        int
 	CurrentStreak  int
 	LongestStreak  int
 	LastActiveDate *time.Time
