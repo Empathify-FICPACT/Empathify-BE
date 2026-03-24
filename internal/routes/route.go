@@ -12,32 +12,39 @@ import (
 )
 
 func Route(app *fiber.App, db *pgxpool.Pool) {
-	authRepo := repository.NewAuthRepository(db)
-	authService := service.NewAuthService(authRepo)
-	googleOAuth := provider.NewGoogleOAuthProvider()
-	authHandler := handler.NewAuthHandler(authService, googleOAuth)
-
-	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService)
-
-	stt := provider.NewSTTProvider()
-	gemini := provider.NewGeminiProvider()
-	convRepo := repository.NewConversationRepository(db)
-	convService := service.NewConversationService(convRepo, userRepo, gemini, stt)
-	convHandler := handler.NewConversationHandler(convService)
-
-	exprRepo := repository.NewExpressionRepository(db)
-	exprService := service.NewExpressionService(exprRepo, userRepo, gemini)
-	exprHandler := handler.NewExpressionHandler(exprService)
-
+	// repos
+	authRepo    := repository.NewAuthRepository(db)
+	userRepo    := repository.NewUserRepository(db)
+	convRepo    := repository.NewConversationRepository(db)
+	exprRepo    := repository.NewExpressionRepository(db)
 	emotionRepo := repository.NewEmotionRepository(db)
-	emotionService := service.NewEmotionService(emotionRepo, userRepo)
-	emotionHandler := handler.NewEmotionHandler(emotionService)
+	storyRepo   := repository.NewStoryRepository(db)
+	missionRepo := repository.NewMissionRepository(db)
 
-	storyRepo := repository.NewStoryRepository(db)
-	storyService := service.NewStoryService(storyRepo, userRepo)
-	storyHandler := handler.NewStoryHandler(storyService)
+	// providers
+	gemini      := provider.NewGeminiProvider()
+	stt         := provider.NewSTTProvider()
+	googleOAuth := provider.NewGoogleOAuthProvider()
+
+	// mission service dibuat duluan karena dipakai service lain
+	missionSvc := service.NewMissionService(missionRepo, userRepo)
+
+	// services
+	authSvc    := service.NewAuthService(authRepo)
+	userSvc    := service.NewUserService(userRepo)
+	convSvc    := service.NewConversationService(convRepo, userRepo, gemini, stt, missionSvc)
+	exprSvc    := service.NewExpressionService(exprRepo, userRepo, gemini, missionSvc)
+	emotionSvc := service.NewEmotionService(emotionRepo, userRepo, missionSvc)
+	storySvc   := service.NewStoryService(storyRepo, userRepo, missionSvc)
+
+	// handlers
+	authHandler    := handler.NewAuthHandler(authSvc, googleOAuth)
+	userHandler    := handler.NewUserHandler(userSvc)
+	convHandler    := handler.NewConversationHandler(convSvc)
+	exprHandler    := handler.NewExpressionHandler(exprSvc)
+	emotionHandler := handler.NewEmotionHandler(emotionSvc)
+	storyHandler   := handler.NewStoryHandler(storySvc)
+	missionHandler := handler.NewMissionHandler(missionSvc)
 
 	api := app.Group("/api/v1")
 
@@ -53,4 +60,5 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	RegisterExpressionRoutes(api, exprHandler)
 	RegisterEmotionRoutes(api, emotionHandler)
 	RegisterStoryRoutes(api, storyHandler)
+	RegisterMissionRoutes(api, missionHandler)
 }

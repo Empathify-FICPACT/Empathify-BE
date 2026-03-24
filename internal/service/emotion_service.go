@@ -33,15 +33,18 @@ type EmotionService interface {
 type emotionService struct {
 	emotionRepo repository.EmotionRepository
 	userRepo    repository.UserRepository
+	missionSvc  MissionService
 }
 
 func NewEmotionService(
 	emotionRepo repository.EmotionRepository,
 	userRepo repository.UserRepository,
+	missionSvc  MissionService,
 ) EmotionService {
 	return &emotionService{
 		emotionRepo: emotionRepo,
 		userRepo:    userRepo,
+		missionSvc: missionSvc,
 	}
 }
 
@@ -199,6 +202,8 @@ func (s *emotionService) CompleteSession(ctx context.Context, userID, sessionID 
 	if err != nil {
 		return nil, err
 	}
+
+	_ = s.missionSvc.UpdateProgressAfterSession(ctx, userID, "emotion", emotionXP)
 
 	return &response.CompleteEmotionResponse{
 		SessionID:    sessionID,

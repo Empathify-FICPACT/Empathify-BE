@@ -37,6 +37,7 @@ type conversationService struct {
 	userRepo repository.UserRepository
 	gemini   *provider.GeminiProvider
 	stt      *provider.STTProvider
+	missionSvc  MissionService
 }
 
 func NewConversationService(
@@ -44,12 +45,14 @@ func NewConversationService(
 	userRepo repository.UserRepository,
 	gemini *provider.GeminiProvider,
 	stt *provider.STTProvider,
+	missionSvc  MissionService,
 ) ConversationService {
 	return &conversationService{
 		convRepo: convRepo,
 		userRepo: userRepo,
 		gemini:   gemini,
 		stt:      stt,
+		missionSvc: missionSvc,
 	}
 }
 
@@ -246,6 +249,8 @@ func (s *conversationService) CompleteSession(ctx context.Context, userID, sessi
 	if err != nil {
 		return nil, err
 	}
+
+	_ = s.missionSvc.UpdateProgressAfterSession(ctx, userID, "conversation", conversationXP)
 
 	return &response.CompleteSessionResponse{
 		SessionID: sessionID,
