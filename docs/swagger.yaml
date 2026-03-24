@@ -61,12 +61,26 @@ definitions:
       total_expressions:
         type: integer
     type: object
+  request.StartStoryRequest:
+    properties:
+      total_scenarios:
+        description: 5-8, default 5
+        type: integer
+    type: object
   request.SubmitEmotionAnswerRequest:
     properties:
       chosen_answer:
         description: a, b, c, d
         type: string
       question_id:
+        type: string
+    type: object
+  request.SubmitStoryAnswerRequest:
+    properties:
+      chosen_answer:
+        description: a, b, c, d
+        type: string
+      scenario_id:
         type: string
     type: object
   response.AuthResponse:
@@ -107,6 +121,19 @@ definitions:
     properties:
       session_id:
         type: string
+      total_xp:
+        type: integer
+      xp_earned:
+        type: integer
+    type: object
+  response.CompleteStoryResponse:
+    properties:
+      correct_count:
+        type: integer
+      session_id:
+        type: string
+      total:
+        type: integer
       total_xp:
         type: integer
       xp_earned:
@@ -248,6 +275,53 @@ definitions:
       topic_title:
         type: string
       xp_earned:
+        type: integer
+    type: object
+  response.StoryAnswerResponse:
+    properties:
+      chosen_answer:
+        type: string
+      correct_answer:
+        type: string
+      explanation:
+        type: string
+      is_correct:
+        type: boolean
+      scenario_id:
+        type: string
+      scenario_order:
+        type: integer
+    type: object
+  response.StoryScenarioResponse:
+    properties:
+      id:
+        type: string
+      option_a:
+        type: string
+      option_b:
+        type: string
+      option_c:
+        type: string
+      option_d:
+        type: string
+      order:
+        type: integer
+      situation:
+        type: string
+    type: object
+  response.StorySessionResponse:
+    properties:
+      id:
+        type: string
+      scenarios:
+        items:
+          $ref: '#/definitions/response.StoryScenarioResponse'
+        type: array
+      started_at:
+        type: string
+      status:
+        type: string
+      total_scenarios:
         type: integer
     type: object
   response.TopicResponse:
@@ -841,6 +915,127 @@ paths:
       summary: Selesaikan sesi ekspresi
       tags:
       - Expression
+  /story/sessions:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Jumlah skenario (5-8, default 5)
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/request.StartStoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.StorySessionResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Mulai sesi cerita interaktif
+      tags:
+      - Story
+  /story/sessions/{id}/answers:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Jawaban user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.SubmitStoryAnswerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.StoryAnswerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Submit jawaban skenario cerita
+      tags:
+      - Story
+  /story/sessions/{id}/complete:
+    patch:
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.CompleteStoryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Selesaikan sesi cerita interaktif
+      tags:
+      - Story
   /user/onboarding:
     patch:
       consumes:
