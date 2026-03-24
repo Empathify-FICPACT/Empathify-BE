@@ -139,6 +139,15 @@ definitions:
       xp_earned:
         type: integer
     type: object
+  response.DailyMissionsResponse:
+    properties:
+      date:
+        type: string
+      missions:
+        items:
+          $ref: '#/definitions/response.MissionResponse'
+        type: array
+    type: object
   response.EmotionAnswerResponse:
     properties:
       chosen_answer:
@@ -246,6 +255,25 @@ definitions:
       success:
         example: true
         type: boolean
+    type: object
+  response.MissionResponse:
+    properties:
+      completed_at:
+        type: string
+      current_value:
+        type: integer
+      description:
+        type: string
+      id:
+        type: string
+      is_completed:
+        type: boolean
+      mission_type:
+        type: string
+      target_value:
+        type: integer
+      xp_reward:
+        type: integer
     type: object
   response.Response:
     properties:
@@ -915,6 +943,30 @@ paths:
       summary: Selesaikan sesi ekspresi
       tags:
       - Expression
+  /missions/today:
+    get:
+      description: Menampilkan 3 misi harian beserta progress user hari ini
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.DailyMissionsResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Ambil misi harian user
+      tags:
+      - Mission
   /story/sessions:
     post:
       consumes:

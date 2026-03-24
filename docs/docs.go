@@ -909,6 +909,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/missions/today": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Menampilkan 3 misi harian beserta progress user hari ini",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mission"
+                ],
+                "summary": "Ambil misi harian user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.DailyMissionsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/story/sessions": {
             "post": {
                 "security": [
@@ -1397,6 +1440,20 @@ const docTemplate = `{
                 }
             }
         },
+        "response.DailyMissionsResponse": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "missions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.MissionResponse"
+                    }
+                }
+            }
+        },
         "response.EmotionAnswerResponse": {
             "type": "object",
             "properties": {
@@ -1559,6 +1616,35 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "response.MissionResponse": {
+            "type": "object",
+            "properties": {
+                "completed_at": {
+                    "type": "string"
+                },
+                "current_value": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_completed": {
+                    "type": "boolean"
+                },
+                "mission_type": {
+                    "type": "string"
+                },
+                "target_value": {
+                    "type": "integer"
+                },
+                "xp_reward": {
+                    "type": "integer"
                 }
             }
         },
