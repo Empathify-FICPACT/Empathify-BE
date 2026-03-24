@@ -50,10 +50,24 @@ definitions:
       topic_id:
         type: string
     type: object
+  request.StartEmotionRequest:
+    properties:
+      total_questions:
+        description: 5-8, default 5
+        type: integer
+    type: object
   request.StartExpressionRequest:
     properties:
       total_expressions:
         type: integer
+    type: object
+  request.SubmitEmotionAnswerRequest:
+    properties:
+      chosen_answer:
+        description: a, b, c, d
+        type: string
+      question_id:
+        type: string
     type: object
   response.AuthResponse:
     properties:
@@ -62,6 +76,19 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/response.UserData'
+    type: object
+  response.CompleteEmotionResponse:
+    properties:
+      correct_count:
+        type: integer
+      session_id:
+        type: string
+      total:
+        type: integer
+      total_xp:
+        type: integer
+      xp_earned:
+        type: integer
     type: object
   response.CompleteExpressionResponse:
     properties:
@@ -83,6 +110,51 @@ definitions:
       total_xp:
         type: integer
       xp_earned:
+        type: integer
+    type: object
+  response.EmotionAnswerResponse:
+    properties:
+      chosen_answer:
+        type: string
+      correct_answer:
+        type: string
+      is_correct:
+        type: boolean
+      question_id:
+        type: string
+      question_order:
+        type: integer
+    type: object
+  response.EmotionQuestionResponse:
+    properties:
+      id:
+        type: string
+      option_a:
+        type: string
+      option_b:
+        type: string
+      option_c:
+        type: string
+      option_d:
+        type: string
+      order:
+        type: integer
+      situation:
+        type: string
+    type: object
+  response.EmotionSessionResponse:
+    properties:
+      id:
+        type: string
+      questions:
+        items:
+          $ref: '#/definitions/response.EmotionQuestionResponse'
+        type: array
+      started_at:
+        type: string
+      status:
+        type: string
+      total_questions:
         type: integer
     type: object
   response.ExpressionAttemptResponse:
@@ -523,6 +595,127 @@ paths:
       summary: Ambil semua topik percakapan
       tags:
       - Conversation
+  /emotion/sessions:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Jumlah soal (5-8, default 5)
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/request.StartEmotionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.EmotionSessionResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Mulai sesi memahami emosi
+      tags:
+      - Emotion
+  /emotion/sessions/{id}/answers:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Jawaban user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.SubmitEmotionAnswerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.EmotionAnswerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Submit jawaban soal emosi
+      tags:
+      - Emotion
+  /emotion/sessions/{id}/complete:
+    patch:
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.CompleteEmotionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Selesaikan sesi memahami emosi
+      tags:
+      - Emotion
   /expression/sessions:
     post:
       consumes:
