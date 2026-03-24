@@ -1,10 +1,10 @@
 package routes
 
 import (
+	swaggo "github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
-	swaggo "github.com/gofiber/contrib/v3/swaggo"
-	
+
 	"github.com/Empathify-FICPACT/Empathify-BE/internal/handler"
 	"github.com/Empathify-FICPACT/Empathify-BE/internal/provider"
 	"github.com/Empathify-FICPACT/Empathify-BE/internal/repository"
@@ -26,7 +26,7 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	convRepo := repository.NewConversationRepository(db)
 	convService := service.NewConversationService(convRepo, userRepo, gemini, stt)
 	convHandler := handler.NewConversationHandler(convService)
-	
+
 	exprRepo := repository.NewExpressionRepository(db)
 	exprService := service.NewExpressionService(exprRepo, userRepo, gemini)
 	exprHandler := handler.NewExpressionHandler(exprService)
@@ -35,17 +35,22 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	emotionService := service.NewEmotionService(emotionRepo, userRepo)
 	emotionHandler := handler.NewEmotionHandler(emotionService)
 
+	storyRepo := repository.NewStoryRepository(db)
+	storyService := service.NewStoryService(storyRepo, userRepo)
+	storyHandler := handler.NewStoryHandler(storyService)
+
 	api := app.Group("/api/v1")
-	
-	api.Get("/", func (c fiber.Ctx) error {
+
+	api.Get("/", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
-	
+
 	app.Get("/swagger/*", swaggo.HandlerDefault)
-	
+
 	RegisterAuthRoutes(api, authHandler)
 	RegisterUserRoutes(api, userHandler)
 	RegisterConversationRoutes(api, convHandler)
 	RegisterExpressionRoutes(api, exprHandler)
 	RegisterEmotionRoutes(api, emotionHandler)
+	RegisterStoryRoutes(api, storyHandler)
 }
