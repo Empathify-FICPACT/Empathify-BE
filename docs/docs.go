@@ -233,6 +233,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/badges": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Menampilkan semua badge beserta status unlock",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Badge"
+                ],
+                "summary": "Ambil semua badge user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.BadgeListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/conversation/sessions": {
             "post": {
                 "security": [
@@ -1363,6 +1406,46 @@ const docTemplate = `{
                 },
                 "user": {
                     "$ref": "#/definitions/response.UserData"
+                }
+            }
+        },
+        "response.BadgeListResponse": {
+            "type": "object",
+            "properties": {
+                "badges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.BadgeResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "unlocked": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.BadgeResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "earned_at": {
+                    "type": "string"
+                },
+                "icon_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_unlocked": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
