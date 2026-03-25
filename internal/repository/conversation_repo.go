@@ -17,6 +17,7 @@ type ConversationRepository interface {
 	GetSessionMessages(ctx context.Context, sessionID string) ([]domain.ConversationMessage, error)
 	CreateMessage(ctx context.Context, msg *domain.ConversationMessage) error
 	CompleteSession(ctx context.Context, sessionID string, xpEarned int) error
+	CountCompletedSessions(ctx context.Context, userID string) (int, error)
 }
 
 type conversationRepository struct {
@@ -152,4 +153,11 @@ func (r *conversationRepository) CompleteSession(ctx context.Context, sessionID 
 	`
 	_, err := r.db.Exec(ctx, query, xpEarned, sessionID)
 	return err
+}
+
+func (r *conversationRepository) CountCompletedSessions(ctx context.Context, userID string) (int, error) {
+	query := `SELECT COUNT(*) FROM conversation_sessions WHERE user_id = $1 AND status = 'completed'`
+	var count int
+	err := r.db.QueryRow(ctx, query, userID).Scan(&count)
+	return count, err
 }

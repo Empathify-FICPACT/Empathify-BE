@@ -37,17 +37,23 @@ type expressionService struct {
 	exprRepo repository.ExpressionRepository
 	userRepo repository.UserRepository
 	gemini   *provider.GeminiProvider
+	missionSvc  MissionService
+	badgeSvc BadgeService
 }
 
 func NewExpressionService(
 	exprRepo repository.ExpressionRepository,
 	userRepo repository.UserRepository,
 	gemini *provider.GeminiProvider,
+	missionSvc  MissionService,
+	badgeSvc BadgeService,
 ) ExpressionService {
 	return &expressionService{
 		exprRepo: exprRepo,
 		userRepo: userRepo,
 		gemini:   gemini,
+		missionSvc: missionSvc,
+		badgeSvc: badgeSvc,
 	}
 }
 
@@ -211,6 +217,9 @@ func (s *expressionService) CompleteSession(ctx context.Context, userID, session
 	if err != nil {
 		return nil, err
 	}
+
+	_ = s.missionSvc.UpdateProgressAfterSession(ctx, userID, "expression", expressionXP)
+	_ = s.badgeSvc.CheckAndAwardBadges(ctx, userID)
 
 	return &response.CompleteExpressionResponse{
 		SessionID:    sessionID,

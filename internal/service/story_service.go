@@ -33,15 +33,21 @@ type StoryService interface {
 type storyService struct {
 	storyRepo repository.StoryRepository
 	userRepo  repository.UserRepository
+	missionSvc  MissionService
+	badgeSvc BadgeService
 }
 
 func NewStoryService(
 	storyRepo repository.StoryRepository,
 	userRepo repository.UserRepository,
+	missionSvc  MissionService,
+	badgeSvc BadgeService,
 ) StoryService {
 	return &storyService{
 		storyRepo: storyRepo,
 		userRepo:  userRepo,
+		missionSvc: missionSvc,
+		badgeSvc: badgeSvc,
 	}
 }
 
@@ -197,6 +203,9 @@ func (s *storyService) CompleteSession(ctx context.Context, userID, sessionID st
 	if err != nil {
 		return nil, err
 	}
+
+	_ = s.missionSvc.UpdateProgressAfterSession(ctx, userID, "story", storyXP)
+	_ = s.badgeSvc.CheckAndAwardBadges(ctx, userID)
 
 	return &response.CompleteStoryResponse{
 		SessionID:    sessionID,

@@ -17,6 +17,7 @@ type EmotionRepository interface {
 	CreateAnswer(ctx context.Context, answer *domain.EmotionAnswer) error
 	GetAnswersBySessionID(ctx context.Context, sessionID string) ([]domain.EmotionAnswer, error)
 	CompleteSession(ctx context.Context, sessionID string, correctCount, xpEarned int) error
+	CountCompletedSessions(ctx context.Context, userID string) (int, error)
 }
 
 type emotionRepository struct {
@@ -168,4 +169,11 @@ func (r *emotionRepository) CompleteSession(ctx context.Context, sessionID strin
 	`
 	_, err := r.db.Exec(ctx, query, correctCount, xpEarned, sessionID)
 	return err
+}
+
+func (r *emotionRepository) CountCompletedSessions(ctx context.Context, userID string) (int, error) {
+	query := `SELECT COUNT(*) FROM emotion_sessions WHERE user_id = $1 AND status = 'completed'`
+	var count int
+	err := r.db.QueryRow(ctx, query, userID).Scan(&count)
+	return count, err
 }

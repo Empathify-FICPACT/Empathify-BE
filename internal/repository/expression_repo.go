@@ -17,6 +17,7 @@ type ExpressionRepository interface {
 	CreateAttempt(ctx context.Context, attempt *domain.ExpressionAttempt) error
 	GetAttemptsBySessionID(ctx context.Context, sessionID string) ([]domain.ExpressionAttempt, error)
 	CompleteSession(ctx context.Context, sessionID string, correctCount, xpEarned int) error
+	CountCompletedSessions(ctx context.Context, userID string) (int, error)
 }
 
 type expressionRepository struct {
@@ -163,4 +164,11 @@ func (r *expressionRepository) CompleteSession(ctx context.Context, sessionID st
 	`
 	_, err := r.db.Exec(ctx, query, correctCount, xpEarned, sessionID)
 	return err
+}
+
+func (r *expressionRepository) CountCompletedSessions(ctx context.Context, userID string) (int, error) {
+	query := `SELECT COUNT(*) FROM expression_sessions WHERE user_id = $1 AND status = 'completed'`
+	var count int
+	err := r.db.QueryRow(ctx, query, userID).Scan(&count)
+	return count, err
 }
