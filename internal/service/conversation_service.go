@@ -38,6 +38,7 @@ type conversationService struct {
 	gemini   *provider.GeminiProvider
 	stt      *provider.STTProvider
 	missionSvc  MissionService
+	badgeSvc BadgeService
 }
 
 func NewConversationService(
@@ -46,6 +47,7 @@ func NewConversationService(
 	gemini *provider.GeminiProvider,
 	stt *provider.STTProvider,
 	missionSvc  MissionService,
+	badgeSvc BadgeService,
 ) ConversationService {
 	return &conversationService{
 		convRepo: convRepo,
@@ -53,6 +55,7 @@ func NewConversationService(
 		gemini:   gemini,
 		stt:      stt,
 		missionSvc: missionSvc,
+		badgeSvc: badgeSvc,
 	}
 }
 
@@ -251,6 +254,7 @@ func (s *conversationService) CompleteSession(ctx context.Context, userID, sessi
 	}
 
 	_ = s.missionSvc.UpdateProgressAfterSession(ctx, userID, "conversation", conversationXP)
+	_ = s.badgeSvc.CheckAndAwardBadges(ctx, userID)
 
 	return &response.CompleteSessionResponse{
 		SessionID: sessionID,

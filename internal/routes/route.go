@@ -20,6 +20,7 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	emotionRepo := repository.NewEmotionRepository(db)
 	storyRepo   := repository.NewStoryRepository(db)
 	missionRepo := repository.NewMissionRepository(db)
+	badgeRepo := repository.NewBadgeRepository(db)
 
 	// providers
 	gemini      := provider.NewGeminiProvider()
@@ -28,14 +29,15 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 
 	// mission service dibuat duluan karena dipakai service lain
 	missionSvc := service.NewMissionService(missionRepo, userRepo)
+	badgeSvc := service.NewBadgeService(badgeRepo, userRepo, exprRepo, emotionRepo, storyRepo, convRepo)
 
 	// services
 	authSvc    := service.NewAuthService(authRepo)
 	userSvc    := service.NewUserService(userRepo)
-	convSvc    := service.NewConversationService(convRepo, userRepo, gemini, stt, missionSvc)
-	exprSvc    := service.NewExpressionService(exprRepo, userRepo, gemini, missionSvc)
-	emotionSvc := service.NewEmotionService(emotionRepo, userRepo, missionSvc)
-	storySvc   := service.NewStoryService(storyRepo, userRepo, missionSvc)
+	convSvc    := service.NewConversationService(convRepo, userRepo, gemini, stt, missionSvc, badgeSvc)
+	exprSvc    := service.NewExpressionService(exprRepo, userRepo, gemini, missionSvc, badgeSvc)
+	emotionSvc := service.NewEmotionService(emotionRepo, userRepo, missionSvc, badgeSvc)
+	storySvc   := service.NewStoryService(storyRepo, userRepo, missionSvc, badgeSvc)
 
 	// handlers
 	authHandler    := handler.NewAuthHandler(authSvc, googleOAuth)
@@ -45,6 +47,7 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	emotionHandler := handler.NewEmotionHandler(emotionSvc)
 	storyHandler   := handler.NewStoryHandler(storySvc)
 	missionHandler := handler.NewMissionHandler(missionSvc)
+	badgeHandler := handler.NewBadgeHandler(badgeSvc)
 
 	api := app.Group("/api/v1")
 
@@ -61,4 +64,5 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	RegisterEmotionRoutes(api, emotionHandler)
 	RegisterStoryRoutes(api, storyHandler)
 	RegisterMissionRoutes(api, missionHandler)
+	RegisterBadgeRoutes(api, badgeHandler)
 }

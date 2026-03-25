@@ -34,17 +34,20 @@ type emotionService struct {
 	emotionRepo repository.EmotionRepository
 	userRepo    repository.UserRepository
 	missionSvc  MissionService
+	badgeSvc BadgeService
 }
 
 func NewEmotionService(
 	emotionRepo repository.EmotionRepository,
 	userRepo repository.UserRepository,
 	missionSvc  MissionService,
+	badgeSvc BadgeService,
 ) EmotionService {
 	return &emotionService{
 		emotionRepo: emotionRepo,
 		userRepo:    userRepo,
 		missionSvc: missionSvc,
+		badgeSvc: badgeSvc,
 	}
 }
 
@@ -204,6 +207,7 @@ func (s *emotionService) CompleteSession(ctx context.Context, userID, sessionID 
 	}
 
 	_ = s.missionSvc.UpdateProgressAfterSession(ctx, userID, "emotion", emotionXP)
+	_ = s.badgeSvc.CheckAndAwardBadges(ctx, userID)
 
 	return &response.CompleteEmotionResponse{
 		SessionID:    sessionID,

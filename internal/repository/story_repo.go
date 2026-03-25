@@ -17,6 +17,7 @@ type StoryRepository interface {
 	CreateAnswer(ctx context.Context, answer *domain.StoryAnswer) error
 	GetAnswersBySessionID(ctx context.Context, sessionID string) ([]domain.StoryAnswer, error)
 	CompleteSession(ctx context.Context, sessionID string, correctCount, xpEarned int) error
+	CountCompletedSessions(ctx context.Context, userID string) (int, error)
 }
 
 type storyRepository struct {
@@ -168,4 +169,11 @@ func (r *storyRepository) CompleteSession(ctx context.Context, sessionID string,
 	`
 	_, err := r.db.Exec(ctx, query, correctCount, xpEarned, sessionID)
 	return err
+}
+
+func (r *storyRepository) CountCompletedSessions(ctx context.Context, userID string) (int, error) {
+	query := `SELECT COUNT(*) FROM story_sessions WHERE user_id = $1 AND status = 'completed'`
+	var count int
+	err := r.db.QueryRow(ctx, query, userID).Scan(&count)
+	return count, err
 }
