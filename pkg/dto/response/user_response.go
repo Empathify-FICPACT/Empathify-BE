@@ -5,6 +5,7 @@ type UserResponse struct {
 	Name           *string `json:"name" example:"Gantang Satria"`
 	Gender         *string `json:"gender" example:"male"`
 	AvatarID       *int16  `json:"avatar_id" example:"1"`
+	TotalXP       int     `json:"total_xp"`
 	CurrentStreak  int     `json:"current_streak" example:"3"`
 	LongestStreak  int     `json:"longest_streak" example:"7"`
 }

@@ -11,4 +11,6 @@ func RegisterUserRoutes(router fiber.Router, userHandler *handler.UserHandler) {
 	user := router.Group("/user", middleware.AuthMiddleware())
 
 	user.Patch("/onboarding", userHandler.Onboarding)
+	user.Get("/profile", userHandler.GetProfile)
+	user.Patch("/profile", userHandler.EditProfile)
 }

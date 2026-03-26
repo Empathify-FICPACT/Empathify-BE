@@ -62,3 +62,67 @@ func (h *UserHandler) Onboarding(c fiber.Ctx) error {
 
 	return response.Success(c, "onboarding berhasil", result)
 }
+
+// @Summary      Ambil profil user
+// @Tags         User
+// @Produce      json
+// @Success      200  {object}  response.Response{data=response.UserResponse}
+// @Failure      404  {object}  response.Response
+// @Failure      500  {object}  response.Response
+// @Security     BearerAuth
+// @Router       /user/profile [get]
+func (h *UserHandler) GetProfile(c fiber.Ctx) error {
+	userID := middleware.GetUserID(c)
+
+	result, err := h.userService.GetProfile(c.Context(), userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrUserNotFound):
+			return response.NotFound(c, "user tidak ditemukan")
+		default:
+			return response.InternalServerError(c, "terjadi kesalahan, coba lagi")
+		}
+	}
+	return response.Success(c, "berhasil mengambil profil", result)
+}
+
+// @Summary      Edit profil user
+// @Description  Update nama, gender, atau avatar. Semua field opsional.
+// @Tags         User
+// @Accept       json
+// @Produce      json
+// @Param        body  body      request.EditProfileRequest  true  "Data profil yang ingin diubah"
+// @Success      200   {object}  response.Response{data=response.UserResponse}
+// @Failure      400   {object}  response.Response
+// @Failure      404   {object}  response.Response
+// @Failure      500   {object}  response.Response
+// @Security     BearerAuth
+// @Router       /user/profile [patch]
+func (h *UserHandler) EditProfile(c fiber.Ctx) error {
+	userID := middleware.GetUserID(c)
+
+	req := new(request.EditProfileRequest)
+	if err := c.Bind().JSON(req); err != nil {
+		return response.BadRequest(c, "invalid request body")
+	}
+
+	// minimal 1 field harus diisi
+	if req.Name == nil && req.Gender == nil && req.AvatarID == nil {
+		return response.BadRequest(c, "minimal satu field harus diisi")
+	}
+
+	result, err := h.userService.EditProfile(c.Context(), userID, req)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrUserNotFound):
+			return response.NotFound(c, "user tidak ditemukan")
+		case errors.Is(err, service.ErrInvalidGender):
+			return response.BadRequest(c, "gender harus male atau female")
+		case errors.Is(err, service.ErrInvalidAvatarID):
+			return response.BadRequest(c, "avatar_id harus antara 1 sampai 4")
+		default:
+			return response.InternalServerError(c, "terjadi kesalahan, coba lagi")
+		}
+	}
+	return response.Success(c, "profil berhasil diperbarui", result)
+}

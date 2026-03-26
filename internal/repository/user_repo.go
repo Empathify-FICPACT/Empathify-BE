@@ -12,6 +12,7 @@ import (
 type UserRepository interface {
 	FindByID(ctx context.Context, id string) (*domain.User, error)
 	UpdateOnboarding(ctx context.Context, id string, gender string, avatarID int16) error
+	UpdateProfile(ctx context.Context, id string, name *string, gender *string, avatarID *int16) error
 	AddXP(ctx context.Context, userID string, xp int) error
 }
 
@@ -56,6 +57,20 @@ func (r *userRepository) UpdateOnboarding(ctx context.Context, id string, gender
 		WHERE id = $3
 	`
 	_, err := r.db.Exec(ctx, query, gender, avatarID, id)
+	return err
+}
+
+func (r *userRepository) UpdateProfile(ctx context.Context, id string, name *string, gender *string, avatarID *int16) error {
+	query := `
+		UPDATE users
+		SET
+			name      = COALESCE($1, name),
+			gender    = COALESCE($2::empathify.gender_type, gender),
+			avatar_id = COALESCE($3, avatar_id),
+			updated_at = now()
+		WHERE id = $4
+	`
+	_, err := r.db.Exec(ctx, query, name, gender, avatarID, id)
 	return err
 }
 
