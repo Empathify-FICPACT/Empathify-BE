@@ -21,6 +21,7 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	storyRepo   := repository.NewStoryRepository(db)
 	missionRepo := repository.NewMissionRepository(db)
 	badgeRepo := repository.NewBadgeRepository(db)
+	dashboardRepo    := repository.NewDashboardRepository(db)
 
 	// providers
 	gemini      := provider.NewGeminiProvider()
@@ -38,6 +39,7 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	exprSvc    := service.NewExpressionService(exprRepo, userRepo, gemini, missionSvc, badgeSvc)
 	emotionSvc := service.NewEmotionService(emotionRepo, userRepo, missionSvc, badgeSvc)
 	storySvc   := service.NewStoryService(storyRepo, userRepo, missionSvc, badgeSvc)
+	dashboardSvc     := service.NewDashboardService(dashboardRepo, userRepo)
 
 	// handlers
 	authHandler    := handler.NewAuthHandler(authSvc, googleOAuth)
@@ -48,6 +50,7 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	storyHandler   := handler.NewStoryHandler(storySvc)
 	missionHandler := handler.NewMissionHandler(missionSvc)
 	badgeHandler := handler.NewBadgeHandler(badgeSvc)
+	dashboardHandler := handler.NewDashboardHandler(dashboardSvc)
 
 	api := app.Group("/api/v1")
 
@@ -65,4 +68,5 @@ func Route(app *fiber.App, db *pgxpool.Pool) {
 	RegisterStoryRoutes(api, storyHandler)
 	RegisterMissionRoutes(api, missionHandler)
 	RegisterBadgeRoutes(api, badgeHandler)
+	RegisterDashboardRoutes(api, dashboardHandler)
 }
