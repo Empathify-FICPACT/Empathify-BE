@@ -1,5 +1,14 @@
 basePath: /api/v1
 definitions:
+  request.EditProfileRequest:
+    properties:
+      avatar_id:
+        type: integer
+      gender:
+        type: string
+      name:
+        type: string
+    type: object
   request.LoginRequest:
     properties:
       email:
@@ -174,6 +183,67 @@ definitions:
           $ref: '#/definitions/response.MissionResponse'
         type: array
     type: object
+  response.DashboardBadges:
+    properties:
+      latest:
+        description: 3 badge terakhir yang diraih
+        items:
+          $ref: '#/definitions/response.BadgeResponse'
+        type: array
+      total:
+        type: integer
+      unlocked:
+        type: integer
+    type: object
+  response.DashboardFeatures:
+    properties:
+      conversation:
+        $ref: '#/definitions/response.FeatureStats'
+      emotion:
+        $ref: '#/definitions/response.FeatureStats'
+      expression:
+        $ref: '#/definitions/response.FeatureStats'
+      story:
+        $ref: '#/definitions/response.FeatureStats'
+    type: object
+  response.DashboardMissions:
+    properties:
+      completed_today:
+        type: integer
+      total_today:
+        type: integer
+    type: object
+  response.DashboardResponse:
+    properties:
+      badges:
+        $ref: '#/definitions/response.DashboardBadges'
+      features:
+        $ref: '#/definitions/response.DashboardFeatures'
+      missions:
+        $ref: '#/definitions/response.DashboardMissions'
+      user:
+        $ref: '#/definitions/response.DashboardUser'
+      xp:
+        $ref: '#/definitions/response.DashboardXP'
+    type: object
+  response.DashboardUser:
+    properties:
+      avatar_id:
+        type: integer
+      gender:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      streak:
+        type: integer
+    type: object
+  response.DashboardXP:
+    properties:
+      total:
+        type: integer
+    type: object
   response.EmotionAnswerResponse:
     properties:
       chosen_answer:
@@ -260,6 +330,13 @@ definitions:
       status:
         type: string
       total_expressions:
+        type: integer
+    type: object
+  response.FeatureStats:
+    properties:
+      avg_score:
+        type: number
+      total_sessions:
         type: integer
     type: object
   response.MessageResponse:
@@ -424,6 +501,8 @@ definitions:
       name:
         example: Gantang Satria
         type: string
+      total_xp:
+        type: integer
     type: object
 host: empathify-test.fly.dev
 info:
@@ -747,6 +826,30 @@ paths:
       summary: Ambil semua topik percakapan
       tags:
       - Conversation
+  /dashboard:
+    get:
+      description: Menampilkan ringkasan XP, statistik fitur, misi harian, dan badge
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.DashboardResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Ambil data dashboard user
+      tags:
+      - Dashboard
   /emotion/sessions:
     post:
       consumes:
@@ -1182,6 +1285,73 @@ paths:
       security:
       - BearerAuth: []
       summary: Onboarding user
+      tags:
+      - User
+  /user/profile:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.UserResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Ambil profil user
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: Update nama, gender, atau avatar. Semua field opsional.
+      parameters:
+      - description: Data profil yang ingin diubah
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.EditProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Edit profil user
       tags:
       - User
 securityDefinitions:

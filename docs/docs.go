@@ -537,6 +537,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/dashboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Menampilkan ringkasan XP, statistik fitur, misi harian, dan badge",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Ambil data dashboard user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.DashboardResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/emotion/sessions": {
             "post": {
                 "security": [
@@ -1274,9 +1317,138 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Ambil profil user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update nama, gender, atau avatar. Semua field opsional.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Edit profil user",
+                "parameters": [
+                    {
+                        "description": "Data profil yang ingin diubah",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.EditProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "request.EditProfileRequest": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "request.LoginRequest": {
             "type": "object",
             "required": [
@@ -1537,6 +1709,100 @@ const docTemplate = `{
                 }
             }
         },
+        "response.DashboardBadges": {
+            "type": "object",
+            "properties": {
+                "latest": {
+                    "description": "3 badge terakhir yang diraih",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.BadgeResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "unlocked": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.DashboardFeatures": {
+            "type": "object",
+            "properties": {
+                "conversation": {
+                    "$ref": "#/definitions/response.FeatureStats"
+                },
+                "emotion": {
+                    "$ref": "#/definitions/response.FeatureStats"
+                },
+                "expression": {
+                    "$ref": "#/definitions/response.FeatureStats"
+                },
+                "story": {
+                    "$ref": "#/definitions/response.FeatureStats"
+                }
+            }
+        },
+        "response.DashboardMissions": {
+            "type": "object",
+            "properties": {
+                "completed_today": {
+                    "type": "integer"
+                },
+                "total_today": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.DashboardResponse": {
+            "type": "object",
+            "properties": {
+                "badges": {
+                    "$ref": "#/definitions/response.DashboardBadges"
+                },
+                "features": {
+                    "$ref": "#/definitions/response.DashboardFeatures"
+                },
+                "missions": {
+                    "$ref": "#/definitions/response.DashboardMissions"
+                },
+                "user": {
+                    "$ref": "#/definitions/response.DashboardUser"
+                },
+                "xp": {
+                    "$ref": "#/definitions/response.DashboardXP"
+                }
+            }
+        },
+        "response.DashboardUser": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "streak": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.DashboardXP": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "response.EmotionAnswerResponse": {
             "type": "object",
             "properties": {
@@ -1668,6 +1934,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "total_expressions": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.FeatureStats": {
+            "type": "object",
+            "properties": {
+                "avg_score": {
+                    "type": "number"
+                },
+                "total_sessions": {
                     "type": "integer"
                 }
             }
@@ -1913,6 +2190,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "Gantang Satria"
+                },
+                "total_xp": {
+                    "type": "integer"
                 }
             }
         }
