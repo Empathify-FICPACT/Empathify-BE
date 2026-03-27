@@ -20,6 +20,7 @@ func NewApp(db *pgxpool.Pool) *fiber.App {
 		AllowOrigins: []string{
 			"http://localhost:3000",
 			"https://empathifyy.vercel.app",
+			"https://empathify-be-staging.fly.dev",
 		},
 		AllowMethods: []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
