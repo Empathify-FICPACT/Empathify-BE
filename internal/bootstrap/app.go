@@ -21,6 +21,7 @@ func NewApp(db *pgxpool.Pool) *fiber.App {
 			"http://localhost:3000",
 			"https://empathify.vercel.app",
 			"https://empathifyy.vercel.app",
+			"https://empathify.vercel.app",
 			"https://empathify-be-staging.fly.dev",
 		},
 		AllowMethods: []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
