@@ -176,11 +176,20 @@ func (h *AuthHandler) GoogleCallback(c fiber.Ctx) error {
 	// login atau register otomatis
 	result, err := h.authService.LoginGoogle(c.Context(), googleUser)
 	if err != nil {
-		log.Println("ERROR LoginGoogle:", err)
 		return response.InternalServerError(c, "terjadi kesalahan, coba lagi")
 	}
 
-	return response.Success(c, "login berhasil", result)
+	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    result.AccessToken,
+		HTTPOnly: true,   
+		Secure:   false, 
+		SameSite: "Lax", 
+		Path:     "/",
+		MaxAge:   60 * 60 * 24, 
+	})
+
+	return c.Redirect().To("https://empathify.vercel.app/dashboard/beranda")
 }
 
 func generateState() (string, error) {

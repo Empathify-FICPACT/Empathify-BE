@@ -13,17 +13,25 @@ const UserIDKey = "user_id"
 
 func AuthMiddleware() fiber.Handler {
 	return func(c fiber.Ctx) error {
-		authHeader := c.Get("Authorization")
-		if authHeader == "" {
-			return response.Unauthorized(c, "missing authorization header")
+		var tokenStr string
+
+		cookieToken := c.Cookies("access_token")
+		if cookieToken != "" {
+			tokenStr = cookieToken
+		} else {
+			authHeader := c.Get("Authorization")
+			if authHeader == "" {
+				return response.Unauthorized(c, "missing token")
+			}
+
+			parts := strings.SplitN(authHeader, " ", 2)
+			if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+				return response.Unauthorized(c, "invalid authorization format")
+			}
+
+			tokenStr = parts[1]
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			return response.Unauthorized(c, "invalid authorization format")
-		}
-
-		tokenStr := parts[1]
 		claims, err := jwt.ParseToken(tokenStr)
 		if err != nil {
 			switch err {
@@ -34,7 +42,6 @@ func AuthMiddleware() fiber.Handler {
 			}
 		}
 
-		// simpen user_id ke context, diambil di handler
 		c.Locals(UserIDKey, claims.UserID)
 
 		return c.Next()
