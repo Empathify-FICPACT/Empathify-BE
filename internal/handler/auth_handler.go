@@ -11,6 +11,7 @@ import (
 	"github.com/Empathify-FICPACT/Empathify-BE/internal/provider"
 	"github.com/Empathify-FICPACT/Empathify-BE/internal/service"
 	"github.com/Empathify-FICPACT/Empathify-BE/pkg/dto/request"
+	"github.com/Empathify-FICPACT/Empathify-BE/pkg/jwt"
 	"github.com/Empathify-FICPACT/Empathify-BE/pkg/response"
 )
 
@@ -198,4 +199,42 @@ func generateState() (string, error) {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+// @Summary      Ambil token setelah Google OAuth
+// @Description  Ambil access token dari cookie setelah redirect Google OAuth
+// @Tags         Auth
+// @Produce      json
+// @Success      200  {object}  response.Response{data=response.AuthResponse}
+// @Failure      401  {object}  response.Response
+// @Router       /auth/me [get]
+func (h *AuthHandler) Me(c fiber.Ctx) error {
+	token := c.Cookies("access_token")
+	if token == "" {
+		return response.Unauthorized(c, "tidak ada token")
+	}
+
+	// parse token untuk ambil user_id
+	claims, err := jwt.ParseToken(token)
+	if err != nil {
+		return response.Unauthorized(c, "token tidak valid")
+	}
+
+	// ambil data user
+	user, err := h.authService.GetUserByID(c.Context(), claims.UserID)
+	if err != nil {
+		return response.InternalServerError(c, "terjadi kesalahan, coba lagi")
+	}
+
+	// hapus cookie setelah diambil
+	c.Cookie(&fiber.Cookie{
+		Name:   "access_token",
+		Value:  "",
+		MaxAge: -1,
+	})
+
+	return response.Success(c, "berhasil", fiber.Map{
+		"access_token": token,
+		"user":         user,
+	})
 }

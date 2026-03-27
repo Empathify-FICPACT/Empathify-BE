@@ -22,7 +22,7 @@ func NewSTTProvider() *STTProvider {
 	ctx := context.Background()
 
 	client, err := speech.NewClient(ctx,
-		option.WithCredentialsJSON([]byte(config.App.GoogleSTTCredentials)),
+		option.WithCredentialsFile(config.App.GoogleSTTCredentials),
 	)
 	if err != nil {
 		panic(err)

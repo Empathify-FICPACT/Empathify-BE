@@ -25,6 +25,7 @@ type AuthService interface {
 	RegisterEmail(ctx context.Context, req *request.RegisterRequest) (*response.AuthResponse, error)
 	LoginEmail(ctx context.Context, req *request.LoginRequest) (*response.AuthResponse, error)
 	LoginGoogle(ctx context.Context, googleUser *domain.GoogleUser) (*response.AuthResponse, error)
+	GetUserByID(ctx context.Context, userID string) (*response.UserData, error)
 }
 
 type authService struct {
@@ -213,5 +214,19 @@ func (s *authService) LoginGoogle(ctx context.Context, googleUser *domain.Google
 			Gender:   user.Gender,
 			AvatarID: user.AvatarID,
 		},
+	}, nil
+}
+
+func (s *authService) GetUserByID(ctx context.Context, userID string) (*response.UserData, error) {
+	user, err := s.authRepo.FindUserByID(ctx, userID)
+	if err != nil || user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	return &response.UserData{
+		ID:       user.ID,
+		Name:     user.Name,
+		Gender:   user.Gender,
+		AvatarID: user.AvatarID,
 	}, nil
 }

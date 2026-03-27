@@ -16,4 +16,5 @@ func RegisterAuthRoutes(router fiber.Router, authHandler *handler.AuthHandler) {
 	// google oauth
 	auth.Get("/google", authHandler.GoogleLogin)
 	auth.Get("/google/callback", authHandler.GoogleCallback)
+	auth.Get("/me", authHandler.Me)
 }
