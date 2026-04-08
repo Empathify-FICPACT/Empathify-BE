@@ -1,0 +1,2202 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API untuk platform terapi dan pelatihan keterampilan sosial",
+        "title": "Empathify API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Empathify Team",
+            "email": "empathify@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "empathify-test.fly.dev",
+    "basePath": "/api/v1",
+    "paths": {
+        "/auth/google": {
+            "get": {
+                "description": "Redirect user ke halaman login Google OAuth",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login dengan Google",
+                "responses": {
+                    "302": {
+                        "description": "Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/google/callback": {
+            "get": {
+                "description": "Callback dari Google setelah user berhasil login. Otomatis register jika akun belum ada.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Google OAuth callback",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization code dari Google",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "State untuk CSRF protection",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.AuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "Login menggunakan email dan password yang sudah terdaftar",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login dengan email",
+                "parameters": [
+                    {
+                        "description": "Login payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.AuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Daftarkan akun baru menggunakan email dan password. Gender dan avatar diisi saat onboarding.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register dengan email",
+                "parameters": [
+                    {
+                        "description": "Register payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.AuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/badges": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Menampilkan semua badge beserta status unlock",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Badge"
+                ],
+                "summary": "Ambil semua badge user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.BadgeListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversation/sessions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conversation"
+                ],
+                "summary": "Mulai sesi percakapan",
+                "parameters": [
+                    {
+                        "description": "Topic ID",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.StartConversationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.SessionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversation/sessions/{id}/complete": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conversation"
+                ],
+                "summary": "Selesaikan sesi percakapan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.CompleteSessionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversation/sessions/{id}/messages": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conversation"
+                ],
+                "summary": "Kirim pesan suara dalam sesi percakapan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "File audio (webm/opus)",
+                        "name": "audio",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.SendMessageResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversation/topics": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conversation"
+                ],
+                "summary": "Ambil semua topik percakapan",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.TopicResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/dashboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Menampilkan ringkasan XP, statistik fitur, misi harian, dan badge",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Ambil data dashboard user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.DashboardResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/emotion/sessions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Emotion"
+                ],
+                "summary": "Mulai sesi memahami emosi",
+                "parameters": [
+                    {
+                        "description": "Jumlah soal (5-8, default 5)",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/request.StartEmotionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.EmotionSessionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/emotion/sessions/{id}/answers": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Emotion"
+                ],
+                "summary": "Submit jawaban soal emosi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Jawaban user",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SubmitEmotionAnswerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.EmotionAnswerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/emotion/sessions/{id}/complete": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Emotion"
+                ],
+                "summary": "Selesaikan sesi memahami emosi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.CompleteEmotionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/expression/sessions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Expression"
+                ],
+                "summary": "Mulai sesi mengenal ekspresi",
+                "parameters": [
+                    {
+                        "description": "Jumlah ekspresi (3-5, default 3)",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/request.StartExpressionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.ExpressionSessionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/expression/sessions/{id}/attempts": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Expression"
+                ],
+                "summary": "Submit foto ekspresi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Reference ID ekspresi yang ditiru",
+                        "name": "reference_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Foto ekspresi user (jpg/png)",
+                        "name": "photo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.ExpressionAttemptResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/expression/sessions/{id}/complete": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Expression"
+                ],
+                "summary": "Selesaikan sesi ekspresi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.CompleteExpressionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/missions/today": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Menampilkan 3 misi harian beserta progress user hari ini",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mission"
+                ],
+                "summary": "Ambil misi harian user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.DailyMissionsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/story/sessions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Story"
+                ],
+                "summary": "Mulai sesi cerita interaktif",
+                "parameters": [
+                    {
+                        "description": "Jumlah skenario (5-8, default 5)",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/request.StartStoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.StorySessionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/story/sessions/{id}/answers": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Story"
+                ],
+                "summary": "Submit jawaban skenario cerita",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Jawaban user",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SubmitStoryAnswerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.StoryAnswerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/story/sessions/{id}/complete": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Story"
+                ],
+                "summary": "Selesaikan sesi cerita interaktif",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.CompleteStoryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/onboarding": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Isi gender dan avatar setelah register email atau login Google pertama kali",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Onboarding user",
+                "parameters": [
+                    {
+                        "description": "Onboarding payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.OnboardingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Ambil profil user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update nama, gender, atau avatar. Semua field opsional.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Edit profil user",
+                "parameters": [
+                    {
+                        "description": "Data profil yang ingin diubah",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.EditProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "request.EditProfileRequest": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "satria@gmail.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "satria123"
+                }
+            }
+        },
+        "request.OnboardingRequest": {
+            "type": "object",
+            "required": [
+                "avatar_id",
+                "gender"
+            ],
+            "properties": {
+                "avatar_id": {
+                    "type": "integer",
+                    "maximum": 4,
+                    "minimum": 1,
+                    "example": 1
+                },
+                "gender": {
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female"
+                    ],
+                    "example": "male"
+                }
+            }
+        },
+        "request.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "satria@gmail.com"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Gantang Satria"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "satria123"
+                }
+            }
+        },
+        "request.StartConversationRequest": {
+            "type": "object",
+            "properties": {
+                "topic_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.StartEmotionRequest": {
+            "type": "object",
+            "properties": {
+                "total_questions": {
+                    "description": "5-8, default 5",
+                    "type": "integer"
+                }
+            }
+        },
+        "request.StartExpressionRequest": {
+            "type": "object",
+            "properties": {
+                "total_expressions": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.StartStoryRequest": {
+            "type": "object",
+            "properties": {
+                "total_scenarios": {
+                    "description": "5-8, default 5",
+                    "type": "integer"
+                }
+            }
+        },
+        "request.SubmitEmotionAnswerRequest": {
+            "type": "object",
+            "properties": {
+                "chosen_answer": {
+                    "description": "a, b, c, d",
+                    "type": "string"
+                },
+                "question_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.SubmitStoryAnswerRequest": {
+            "type": "object",
+            "properties": {
+                "chosen_answer": {
+                    "description": "a, b, c, d",
+                    "type": "string"
+                },
+                "scenario_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "user": {
+                    "$ref": "#/definitions/response.UserData"
+                }
+            }
+        },
+        "response.BadgeListResponse": {
+            "type": "object",
+            "properties": {
+                "badges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.BadgeResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "unlocked": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.BadgeResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "earned_at": {
+                    "type": "string"
+                },
+                "icon_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_unlocked": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.CompleteEmotionResponse": {
+            "type": "object",
+            "properties": {
+                "correct_count": {
+                    "type": "integer"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_xp": {
+                    "type": "integer"
+                },
+                "xp_earned": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.CompleteExpressionResponse": {
+            "type": "object",
+            "properties": {
+                "correct_count": {
+                    "type": "integer"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_xp": {
+                    "type": "integer"
+                },
+                "xp_earned": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.CompleteSessionResponse": {
+            "type": "object",
+            "properties": {
+                "session_id": {
+                    "type": "string"
+                },
+                "total_xp": {
+                    "type": "integer"
+                },
+                "xp_earned": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.CompleteStoryResponse": {
+            "type": "object",
+            "properties": {
+                "correct_count": {
+                    "type": "integer"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_xp": {
+                    "type": "integer"
+                },
+                "xp_earned": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.DailyMissionsResponse": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "missions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.MissionResponse"
+                    }
+                }
+            }
+        },
+        "response.DashboardBadges": {
+            "type": "object",
+            "properties": {
+                "latest": {
+                    "description": "3 badge terakhir yang diraih",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.BadgeResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "unlocked": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.DashboardFeatures": {
+            "type": "object",
+            "properties": {
+                "conversation": {
+                    "$ref": "#/definitions/response.FeatureStats"
+                },
+                "emotion": {
+                    "$ref": "#/definitions/response.FeatureStats"
+                },
+                "expression": {
+                    "$ref": "#/definitions/response.FeatureStats"
+                },
+                "story": {
+                    "$ref": "#/definitions/response.FeatureStats"
+                }
+            }
+        },
+        "response.DashboardMissions": {
+            "type": "object",
+            "properties": {
+                "completed_today": {
+                    "type": "integer"
+                },
+                "total_today": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.DashboardResponse": {
+            "type": "object",
+            "properties": {
+                "badges": {
+                    "$ref": "#/definitions/response.DashboardBadges"
+                },
+                "features": {
+                    "$ref": "#/definitions/response.DashboardFeatures"
+                },
+                "missions": {
+                    "$ref": "#/definitions/response.DashboardMissions"
+                },
+                "user": {
+                    "$ref": "#/definitions/response.DashboardUser"
+                },
+                "xp": {
+                    "$ref": "#/definitions/response.DashboardXP"
+                }
+            }
+        },
+        "response.DashboardUser": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "streak": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.DashboardXP": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.EmotionAnswerResponse": {
+            "type": "object",
+            "properties": {
+                "chosen_answer": {
+                    "type": "string"
+                },
+                "correct_answer": {
+                    "type": "string"
+                },
+                "is_correct": {
+                    "type": "boolean"
+                },
+                "question_id": {
+                    "type": "string"
+                },
+                "question_order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.EmotionQuestionResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "option_a": {
+                    "type": "string"
+                },
+                "option_b": {
+                    "type": "string"
+                },
+                "option_c": {
+                    "type": "string"
+                },
+                "option_d": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "situation": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.EmotionSessionResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.EmotionQuestionResponse"
+                    }
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_questions": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.ExpressionAttemptResponse": {
+            "type": "object",
+            "properties": {
+                "ai_feedback": {
+                    "type": "string"
+                },
+                "attempt_id": {
+                    "type": "string"
+                },
+                "attempt_order": {
+                    "type": "integer"
+                },
+                "emotion": {
+                    "type": "string"
+                },
+                "is_correct": {
+                    "type": "boolean"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "similarity_score": {
+                    "type": "number"
+                }
+            }
+        },
+        "response.ExpressionReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "emotion": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.ExpressionSessionResponse": {
+            "type": "object",
+            "properties": {
+                "expressions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ExpressionReferenceResponse"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_expressions": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.FeatureStats": {
+            "type": "object",
+            "properties": {
+                "avg_score": {
+                    "type": "number"
+                },
+                "total_sessions": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Meta": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "operasi berhasil"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "response.MissionResponse": {
+            "type": "object",
+            "properties": {
+                "completed_at": {
+                    "type": "string"
+                },
+                "current_value": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_completed": {
+                    "type": "boolean"
+                },
+                "mission_type": {
+                    "type": "string"
+                },
+                "target_value": {
+                    "type": "integer"
+                },
+                "xp_reward": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "meta": {
+                    "$ref": "#/definitions/response.Meta"
+                }
+            }
+        },
+        "response.SendMessageResponse": {
+            "type": "object",
+            "properties": {
+                "ai_message": {
+                    "$ref": "#/definitions/response.MessageResponse"
+                },
+                "user_message": {
+                    "$ref": "#/definitions/response.MessageResponse"
+                }
+            }
+        },
+        "response.SessionResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "opening_message": {
+                    "$ref": "#/definitions/response.MessageResponse"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "topic_id": {
+                    "type": "string"
+                },
+                "topic_title": {
+                    "type": "string"
+                },
+                "xp_earned": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.StoryAnswerResponse": {
+            "type": "object",
+            "properties": {
+                "chosen_answer": {
+                    "type": "string"
+                },
+                "correct_answer": {
+                    "type": "string"
+                },
+                "explanation": {
+                    "type": "string"
+                },
+                "is_correct": {
+                    "type": "boolean"
+                },
+                "scenario_id": {
+                    "type": "string"
+                },
+                "scenario_order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.StoryScenarioResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "option_a": {
+                    "type": "string"
+                },
+                "option_b": {
+                    "type": "string"
+                },
+                "option_c": {
+                    "type": "string"
+                },
+                "option_d": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "situation": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.StorySessionResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "scenarios": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.StoryScenarioResponse"
+                    }
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_scenarios": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.TopicResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.UserData": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Gantang Satria"
+                }
+            }
+        },
+        "response.UserResponse": {
+            "type": "object",
+            "properties": {
+                "avatar_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "current_streak": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "longest_streak": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Gantang Satria"
+                },
+                "total_xp": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Masukkan token dengan format: Bearer {token}",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
